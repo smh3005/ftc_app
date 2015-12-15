@@ -52,14 +52,14 @@ public class TankDriveArmTeleopMode2 extends OpMode {
                 leftY = Range.clip(leftY * 3, -1, 1);
             } catch (Exception e) {
                 this.leftDrive.setPower(0);
-                DbgLog.msg("SMH - Left Bumper got an error");
+                DbgLog.error("SMH - Left Bumper got an error");
             }
         } else {
             try {
                 leftY = Range.clip(this.gamepad1.left_stick_y / 3, -1, 1);
             } catch (Exception e) {
                 this.leftDrive.setPower(0);
-                DbgLog.msg("SMH - No Left Bumper got an error");
+                DbgLog.error("SMH - No Left Bumper got an error");
             }
         }
         if (gamepad1.right_bumper) {
@@ -67,7 +67,7 @@ public class TankDriveArmTeleopMode2 extends OpMode {
                 rightY = Range.clip(rightY * 3, -1, 1);
             } catch (Exception e) {
                 this.rightDrive.setPower(0);
-                DbgLog.msg("SMH - Right Bumper got an error");
+                DbgLog.error("SMH - Right Bumper got an error");
             }
 
         } else {
@@ -75,7 +75,7 @@ public class TankDriveArmTeleopMode2 extends OpMode {
                 rightY = Range.clip(this.gamepad1.right_stick_y / 3, -1, 1);
             } catch (Exception e) {
                 this.rightDrive.setPower(0);
-                DbgLog.msg("SMH - No Right Bumper got an error");
+                DbgLog.error("SMH - No Right Bumper got an error");
             }
 
         }
@@ -85,28 +85,28 @@ public class TankDriveArmTeleopMode2 extends OpMode {
             this.leftDrive.setPower(leftY);
         } catch (Exception e) {
             this.leftDrive.setPower(0);
-            DbgLog.msg("SMH - Setting the leftDrive power got an error");
+            DbgLog.error("SMH - Setting the leftDrive power got an error");
         }
 
         try {
             this.rightDrive.setPower(-rightY);
         } catch (Exception e) {
             this.rightDrive.setPower(0);
-            DbgLog.msg("SMH - Setting the rightDrive power got an error");
+            DbgLog.error("SMH - Setting the rightDrive power got an error");
         }
 
         try {
             shoulderPower = (this.gamepad2.left_stick_y/4);
         } catch (Exception e){
             this.shoulder.setPower(0);
-            DbgLog.msg("SMH - Setting shoulderPower got an error");
+            DbgLog.error("SMH - Setting shoulderPower got an error");
         }
 
         try {
             elbowPower = (this.gamepad2.right_stick_y/2);
         } catch (Exception e) {
             this.elbow.setPower(0);
-            DbgLog.msg("SMH - Setting elbowPower got an error");
+            DbgLog.error("SMH - Setting elbowPower got an error");
         }
 
         //Manipulate the arm;
@@ -114,14 +114,14 @@ public class TankDriveArmTeleopMode2 extends OpMode {
             this.shoulder.setPower(-shoulderPower);
         } catch (Exception e) {
             this.shoulder.setPower(0);
-            DbgLog.msg("SMH - Setting shoulder's power to shoulderPower got an error");
+            DbgLog.error("SMH - Setting shoulder's power to shoulderPower got an error");
         }
 
         try {
             this.elbow.setPower(-elbowPower);
         } catch (Exception e) {
             this.elbow.setPower(0);
-            DbgLog.msg("SMH - Setting elbow's power to elbowPower got an error");
+            DbgLog.error("SMH - Setting elbow's power to elbowPower got an error");
         }
 
         try {
@@ -130,7 +130,7 @@ public class TankDriveArmTeleopMode2 extends OpMode {
             telemetry.addData("shoulder: ", shoulderPower);
             telemetry.addData("elbow: ", elbowPower);
         } catch (Exception e) {
-            DbgLog.msg("Using telemetry.addData got an error");
+            DbgLog.error("Using telemetry.addData got an error");
         }
 
 
