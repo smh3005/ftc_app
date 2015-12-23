@@ -2,12 +2,13 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 
 import com.qualcomm.ftccommon.DbgLog;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.util.Range;
 
 /**
- * Created by smh30 on 12/8/2015.
+ * Created by smh30 on 12/8/2015. Version 3.1
  */
 public class TankDriveArmTeleopMode2 extends OpMode {
 
@@ -19,13 +20,96 @@ public class TankDriveArmTeleopMode2 extends OpMode {
     double leftY = 1/3;
     double rightY = 1/3;
 
-    double shoulderPower;
-    double elbowPower;
+    double shoulderPower = 1/4;
+    double elbowPower = 1/2;
+
+    Boolean locked = false;
 
 
     @Override
     public void init() {
+        try {
+            initializeTankDriveArmTeleopMode2();
+        } catch (Exception e) {
+            DbgLog.error("Seth - Initialization error");
+        }
 
+    }
+
+    @Override
+    public void loop() {
+
+        //Pressing the B button locks the elbow. This is useful in the end game.
+        if (this.gamepad2.b) {
+            locked = !locked;
+        }
+
+        //Normal driving is the value of the gamepad's joystick's y-position divided by 3.
+        //Speedy driving is the 3 times the normal driving value
+        if (this.gamepad1.left_bumper) {
+            leftY = Range.clip(leftY * 3, -1, 1);
+        } else {
+            leftY = Range.clip(this.gamepad1.left_stick_y / 3, -1, 1);
+        }
+
+        if (this.gamepad1.right_bumper) {
+            rightY = Range.clip(rightY * 3, -1, 1);
+        } else {
+            rightY = Range.clip(this.gamepad1.right_stick_y / 3, -1, 1);
+        }
+
+        //Shoulder and elbow power
+        //Same gearing strategy as the drive system
+        if (this.gamepad2.left_bumper) {
+            shoulderPower = Range.clip(shoulderPower * 4, -1, 1);
+        } else {
+            shoulderPower = Range.clip(this.gamepad2.left_stick_y / 4, -1, 1);
+        }
+
+        if (locked) {
+            elbowPower = 0.1;
+        } else if (this.gamepad2.right_bumper) {
+            elbowPower = Range.clip(elbowPower * 2, -1, 1);
+        } else {
+            elbowPower = Range.clip(this.gamepad2.right_stick_y / 2, -1, 1);
+        }
+
+        //set the power of the motors with the gamepad values
+        try {
+            PowerSetter();
+        } catch (InterruptedException e) {
+            DbgLog.error("Seth - Setting a motor power got an  interrupted exception error");
+        } catch (RobotCoreException e) {
+            DbgLog.error("Seth - Setting a motor power got an  robot core error");
+        } catch (Exception e) {
+            DbgLog.error("Seth - Setting a motor power got an regular exception error");
+        }
+
+
+        telemetry.addData("rightDrive: ", rightY);
+        telemetry.addData("leftDrive: ", leftY);
+        telemetry.addData("shoulder: ", shoulderPower);
+        telemetry.addData("elbow: ", elbowPower);
+    }
+
+
+    private void PowerSetter() throws Exception {
+        this.rightDrive.setPower(-rightY);
+        this.leftDrive.setPower(leftY);
+        this.shoulder.setPower(-shoulderPower);
+        this.elbow.setPower(-elbowPower);
+    }
+
+    @Override
+    public void stop() {
+        this.rightDrive.setPower(0);
+        this.leftDrive.setPower(0);
+        this.shoulder.setPower(0);
+        this.elbow.setPower(0);
+
+    }
+
+    private void initializeTankDriveArmTeleopMode2() {
         //get references to the hardware from the hardware map
         this.leftDrive = hardwareMap.dcMotor.get("leftDrive");
         this.rightDrive = hardwareMap.dcMotor.get("rightDrive");
@@ -41,106 +125,6 @@ public class TankDriveArmTeleopMode2 extends OpMode {
         this.rightDrive.setMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
         this.shoulder.setMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
         this.elbow.setMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
-
     }
 
-    @Override
-    public void loop() {
-
-        if (gamepad1.left_bumper) {
-            try {
-                leftY = Range.clip(leftY * 3, -1, 1);
-            } catch (Exception e) {
-                this.leftDrive.setPower(0);
-                DbgLog.error("Seth - Left Bumper got an error");
-            }
-        } else {
-            try {
-                leftY = Range.clip(this.gamepad1.left_stick_y / 3, -1, 1);
-            } catch (Exception e) {
-                this.leftDrive.setPower(0);
-                DbgLog.error("Seth - No Left Bumper got an error");
-            }
-        }
-        if (gamepad1.right_bumper) {
-            try {
-                rightY = Range.clip(rightY * 3, -1, 1);
-            } catch (Exception e) {
-                this.rightDrive.setPower(0);
-                DbgLog.error("Seth - Right Bumper got an error");
-            }
-
-        } else {
-            try {
-                rightY = Range.clip(this.gamepad1.right_stick_y / 3, -1, 1);
-            } catch (Exception e) {
-                this.rightDrive.setPower(0);
-                DbgLog.error("Seth - No Right Bumper got an error");
-            }
-
-        }
-
-        //set the power of the motors with the gamepad values
-        try {
-            this.leftDrive.setPower(leftY);
-        } catch (Exception e) {
-            this.leftDrive.setPower(0);
-            DbgLog.error("Seth - Setting the leftDrive power got an error");
-        }
-
-        try {
-            this.rightDrive.setPower(-rightY);
-        } catch (Exception e) {
-            this.rightDrive.setPower(0);
-            DbgLog.error("Seth - Setting the rightDrive power got an error");
-        }
-
-        try {
-            shoulderPower = (this.gamepad2.left_stick_y/4);
-        } catch (Exception e){
-            this.shoulder.setPower(0);
-            DbgLog.error("Seth - Setting shoulderPower got an error");
-        }
-
-        try {
-            elbowPower = (this.gamepad2.right_stick_y/2);
-        } catch (Exception e) {
-            this.elbow.setPower(0);
-            DbgLog.error("Seth - Setting elbowPower got an error");
-        }
-
-        //Manipulate the arm;
-        try {
-            this.shoulder.setPower(-shoulderPower);
-        } catch (Exception e) {
-            this.shoulder.setPower(0);
-            DbgLog.error("Seth - Setting shoulder's power to shoulderPower got an error");
-        }
-
-        try {
-            this.elbow.setPower(-elbowPower);
-        } catch (Exception e) {
-            this.elbow.setPower(0);
-            DbgLog.error("Seth - Setting elbow's power to elbowPower got an error");
-        }
-
-        try {
-            telemetry.addData("rightDrive: ", rightY);
-            telemetry.addData("leftDrive: ", leftY);
-            telemetry.addData("shoulder: ", shoulderPower);
-            telemetry.addData("elbow: ", elbowPower);
-        } catch (Exception e) {
-            DbgLog.error("Seth - Using telemetry.addData got an error");
-        }
-
-
-    }
-    @Override
-    public void stop() {
-        this.rightDrive.setPower(0);
-        this.leftDrive.setPower(0);
-        this.shoulder.setPower(0);
-        this.elbow.setPower(0);
-
-    }
 }
