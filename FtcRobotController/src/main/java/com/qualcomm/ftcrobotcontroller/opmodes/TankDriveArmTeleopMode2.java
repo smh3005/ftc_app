@@ -20,8 +20,10 @@ public class TankDriveArmTeleopMode2 extends OpMode {
     double leftY = 1/3;
     double rightY = 1/3;
 
-    double shoulderPower;
-    double elbowPower;
+    double shoulderPower = 1/4;
+    double elbowPower = 1/2;
+
+    Boolean locked = false;
 
 
     @Override
@@ -36,23 +38,41 @@ public class TankDriveArmTeleopMode2 extends OpMode {
 
     @Override
     public void loop() {
+
+        //Pressing the B button locks the elbow. This is useful in the end game.
+        if (this.gamepad2.b) {
+            locked = !locked;
+        }
+
         //Normal driving is the value of the gamepad's joystick's y-position divided by 3.
         //Speedy driving is the 3 times the normal driving value
-        if (gamepad1.left_bumper) {
+        if (this.gamepad1.left_bumper) {
             leftY = Range.clip(leftY * 3, -1, 1);
         } else {
             leftY = Range.clip(this.gamepad1.left_stick_y / 3, -1, 1);
         }
 
-        if (gamepad1.right_bumper) {
+        if (this.gamepad1.right_bumper) {
             rightY = Range.clip(rightY * 3, -1, 1);
         } else {
             rightY = Range.clip(this.gamepad1.right_stick_y / 3, -1, 1);
         }
 
         //Shoulder and elbow power
-        shoulderPower = (this.gamepad2.left_stick_y/4);
-        elbowPower = (this.gamepad2.right_stick_y/2);
+        //Same gearing strategy as the drive system
+        if (this.gamepad2.left_bumper) {
+            shoulderPower = Range.clip(shoulderPower * 4, -1, 1);
+        } else {
+            shoulderPower = Range.clip(this.gamepad2.left_stick_y / 4, -1, 1);
+        }
+
+        if (locked) {
+            elbowPower = 0.1;
+        } else if (this.gamepad2.right_bumper) {
+            elbowPower = Range.clip(elbowPower * 2, -1, 1);
+        } else {
+            elbowPower = Range.clip(this.gamepad2.right_stick_y / 2, -1, 1);
+        }
 
         //set the power of the motors with the gamepad values
         try {
