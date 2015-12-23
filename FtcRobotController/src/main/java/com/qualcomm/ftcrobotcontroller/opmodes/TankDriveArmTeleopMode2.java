@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.util.Range;
 
 /**
- * Created by smh30 on 12/8/2015.
+ * Created by smh30 on 12/8/2015. Version 3.1
  */
 public class TankDriveArmTeleopMode2 extends OpMode {
 
@@ -51,8 +51,8 @@ public class TankDriveArmTeleopMode2 extends OpMode {
         }
 
         //Shoulder and elbow power
-        shoulderPower = (this.gamepad2.left_stick_y / 4);
-        elbowPower = (this.gamepad2.right_stick_y / 2);
+        shoulderPower = (this.gamepad2.left_stick_y/4);
+        elbowPower = (this.gamepad2.right_stick_y/2);
 
         //set the power of the motors with the gamepad values
         try {
