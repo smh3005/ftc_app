@@ -51,8 +51,8 @@ public class TankDriveArmTeleopMode2 extends OpMode {
         }
 
         //Shoulder and elbow power
-        shoulderPower = (this.gamepad2.left_stick_y/4);
-        elbowPower = (this.gamepad2.right_stick_y/2);
+        shoulderPower = (this.gamepad2.left_stick_y / 4);
+        elbowPower = (this.gamepad2.right_stick_y / 2);
 
         //set the power of the motors with the gamepad values
         try {
@@ -70,8 +70,8 @@ public class TankDriveArmTeleopMode2 extends OpMode {
         telemetry.addData("leftDrive: ", leftY);
         telemetry.addData("shoulder: ", shoulderPower);
         telemetry.addData("elbow: ", elbowPower);
-
     }
+
 
     private void PowerSetter() throws Exception {
         this.rightDrive.setPower(-rightY);
