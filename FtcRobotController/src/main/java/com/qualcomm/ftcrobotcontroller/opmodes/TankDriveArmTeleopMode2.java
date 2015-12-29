@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.util.Range;
 
 /**
- * Created by smh30 on 12/8/2015. Version 3.1
+ * Created by smh30 on 12/8/2015. Version 3.2
  */
 public class TankDriveArmTeleopMode2 extends OpMode {
 
@@ -23,7 +23,8 @@ public class TankDriveArmTeleopMode2 extends OpMode {
     double shoulderPower = 1/4;
     double elbowPower = 1/2;
 
-    Boolean locked = false;
+    Boolean lockedElbow = false;
+    Boolean lockedShoulder = false;
 
 
     @Override
@@ -39,9 +40,12 @@ public class TankDriveArmTeleopMode2 extends OpMode {
     @Override
     public void loop() {
 
-        //Pressing the B button locks the elbow. This is useful in the end game.
+        //Pressing the A or B buttons lock the shoulder and the elbow respectfully. This is useful in the end game.
         if (this.gamepad2.b) {
-            locked = !locked;
+            lockedElbow = !lockedElbow;
+        }
+        if (this.gamepad2.a) {
+            lockedShoulder = !lockedShoulder;
         }
 
         //Normal driving is the value of the gamepad's joystick's y-position divided by 3.
@@ -60,13 +64,15 @@ public class TankDriveArmTeleopMode2 extends OpMode {
 
         //Shoulder and elbow power
         //Same gearing strategy as the drive system
-        if (this.gamepad2.left_bumper) {
+        if (lockedShoulder) {
+            shoulderPower = 0.4;
+        } else if (this.gamepad2.left_bumper) {
             shoulderPower = Range.clip(shoulderPower * 4, -1, 1);
         } else {
             shoulderPower = Range.clip(this.gamepad2.left_stick_y / 4, -1, 1);
         }
 
-        if (locked) {
+        if (lockedElbow) {
             elbowPower = 0.1;
         } else if (this.gamepad2.right_bumper) {
             elbowPower = Range.clip(elbowPower * 2, -1, 1);
