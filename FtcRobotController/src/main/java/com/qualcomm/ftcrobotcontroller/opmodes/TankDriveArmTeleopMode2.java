@@ -42,10 +42,12 @@ public class TankDriveArmTeleopMode2 extends OpMode {
 
         //Pressing the A or B buttons lock the shoulder and the elbow respectfully. This is useful in the end game.
         if (this.gamepad2.b) {
-            lockedElbow = !lockedElbow;
+            lockedElbow = false;
+            lockedShoulder = false;
         }
         if (this.gamepad2.a) {
-            lockedShoulder = !lockedShoulder;
+            lockedShoulder = true;
+            lockedElbow = true;
         }
 
         //Normal driving is the value of the gamepad's joystick's y-position divided by 3.
