@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoController;
 import com.qualcomm.robotcore.util.Range;
 
 /**
@@ -18,6 +19,8 @@ public class TankDriveArmTeleopMode2 extends OpMode {
     DcMotor shoulder;
     DcMotor elbow;
     Servo AllClearFinger;
+
+    ServoController servoC1;
 
     double leftY = 1/3;
     double rightY = 1/3;
@@ -86,10 +89,10 @@ public class TankDriveArmTeleopMode2 extends OpMode {
         }
 
         if (this.gamepad2.dpad_down) {
-            fingerPosition = Range.clip(fingerPosition--, 0, 1);;
+            fingerPosition = Range.clip(fingerPosition + 0.01, 0, 1);
         }
         if (this.gamepad2.dpad_up) {
-            fingerPosition = Range.clip(fingerPosition++, 0, 1);;
+            fingerPosition = Range.clip(fingerPosition - 0.01, 0, 1);
         }
 
         //set the power of the motors with the gamepad values
@@ -108,6 +111,7 @@ public class TankDriveArmTeleopMode2 extends OpMode {
         telemetry.addData("leftDrive: ", leftY);
         telemetry.addData("shoulder: ", shoulderPower);
         telemetry.addData("elbow: ", elbowPower);
+        telemetry.addData("AllClearFinger", fingerPosition);
     }
 
 
@@ -136,6 +140,9 @@ public class TankDriveArmTeleopMode2 extends OpMode {
         this.shoulder = hardwareMap.dcMotor.get("shoulder");
         this.elbow = hardwareMap.dcMotor.get("elbow");
         this.AllClearFinger = hardwareMap.servo.get("AllClearFinger");
+
+        this.servoC1 = hardwareMap.servoController.get("servoC1");
+        servoC1.pwmEnable();
 
         //Set the AllClearFinger power
         fingerPosition = 0;
