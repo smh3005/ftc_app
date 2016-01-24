@@ -5,10 +5,12 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoController;
 import com.qualcomm.robotcore.util.Range;
 
 /**
- * Created by smh30 on 12/8/2015. Version 3.2
+ * Created by smh30 on 12/8/2015. Version 3.3
  */
 public class TankDriveArmTeleopMode2 extends OpMode {
 
@@ -16,12 +18,16 @@ public class TankDriveArmTeleopMode2 extends OpMode {
     DcMotor rightDrive;
     DcMotor shoulder;
     DcMotor elbow;
+    Servo AllClearFinger;
+
+    ServoController servoC1;
 
     double leftY = 1/3;
     double rightY = 1/3;
 
     double shoulderPower = 1/4;
     double elbowPower = 1/2;
+    double fingerPosition;
 
     Boolean lockedElbow = false;
     Boolean lockedShoulder = false;
@@ -82,6 +88,13 @@ public class TankDriveArmTeleopMode2 extends OpMode {
             elbowPower = Range.clip(this.gamepad2.right_stick_y / 2, -1, 1);
         }
 
+        if (this.gamepad2.dpad_down) {
+            fingerPosition = Range.clip(fingerPosition + 0.01, 0, 1);
+        }
+        if (this.gamepad2.dpad_up) {
+            fingerPosition = Range.clip(fingerPosition - 0.01, 0, 1);
+        }
+
         //set the power of the motors with the gamepad values
         try {
             PowerSetter();
@@ -98,6 +111,7 @@ public class TankDriveArmTeleopMode2 extends OpMode {
         telemetry.addData("leftDrive: ", leftY);
         telemetry.addData("shoulder: ", shoulderPower);
         telemetry.addData("elbow: ", elbowPower);
+        telemetry.addData("AllClearFinger", fingerPosition);
     }
 
 
@@ -106,6 +120,7 @@ public class TankDriveArmTeleopMode2 extends OpMode {
         this.leftDrive.setPower(leftY);
         this.shoulder.setPower(-shoulderPower);
         this.elbow.setPower(-elbowPower);
+        this.AllClearFinger.setPosition(fingerPosition);
     }
 
     @Override
@@ -124,6 +139,13 @@ public class TankDriveArmTeleopMode2 extends OpMode {
 
         this.shoulder = hardwareMap.dcMotor.get("shoulder");
         this.elbow = hardwareMap.dcMotor.get("elbow");
+        this.AllClearFinger = hardwareMap.servo.get("AllClearFinger");
+
+        this.servoC1 = hardwareMap.servoController.get("servoC1");
+        servoC1.pwmEnable();
+
+        //Set the AllClearFinger power
+        fingerPosition = 0;
 
         // I essentially copied this from SynchTeleOp
         // Configure the knobs of the hardware according to how you've wired your
