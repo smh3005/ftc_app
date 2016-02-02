@@ -18,7 +18,8 @@ public class TankDriveArmTeleopMode2 extends OpMode {
     DcMotor rightDrive;
     DcMotor shoulder;
     DcMotor elbow;
-    Servo AllClearFinger;
+    Servo allClearFinger;
+    Servo zipLineFlipper;
 
     ServoController servoC1;
 
@@ -28,6 +29,7 @@ public class TankDriveArmTeleopMode2 extends OpMode {
     double shoulderPower = 1/4;
     double elbowPower = 1/2;
     double fingerPosition;
+    double zipLineFlipperPosition;
 
     Boolean lockedElbow = false;
     Boolean lockedShoulder = false;
@@ -88,6 +90,13 @@ public class TankDriveArmTeleopMode2 extends OpMode {
             elbowPower = Range.clip(this.gamepad2.right_stick_y / 2, -1, 1);
         }
 
+        if (this.gamepad1.dpad_down) {
+            zipLineFlipperPosition = Range.clip(zipLineFlipperPosition - 0.01, 0, 1);
+        }
+        if (this.gamepad1.dpad_up) {
+            zipLineFlipperPosition = Range.clip(zipLineFlipperPosition + 0.01, 0, 1);
+        }
+
         if (this.gamepad2.dpad_down) {
             fingerPosition = Range.clip(fingerPosition + 0.01, 0, 1);
         }
@@ -111,7 +120,8 @@ public class TankDriveArmTeleopMode2 extends OpMode {
         telemetry.addData("leftDrive: ", leftY);
         telemetry.addData("shoulder: ", shoulderPower);
         telemetry.addData("elbow: ", elbowPower);
-        telemetry.addData("AllClearFinger", fingerPosition);
+        telemetry.addData("allClearFinger", fingerPosition);
+        telemetry.addData("zipLineFlipper", zipLineFlipperPosition);
     }
 
 
@@ -120,7 +130,8 @@ public class TankDriveArmTeleopMode2 extends OpMode {
         this.leftDrive.setPower(leftY);
         this.shoulder.setPower(-shoulderPower);
         this.elbow.setPower(-elbowPower);
-        this.AllClearFinger.setPosition(fingerPosition);
+        this.allClearFinger.setPosition(fingerPosition);
+        this.zipLineFlipper.setPosition(zipLineFlipperPosition);
     }
 
     @Override
@@ -139,13 +150,15 @@ public class TankDriveArmTeleopMode2 extends OpMode {
 
         this.shoulder = hardwareMap.dcMotor.get("shoulder");
         this.elbow = hardwareMap.dcMotor.get("elbow");
-        this.AllClearFinger = hardwareMap.servo.get("AllClearFinger");
+        this.allClearFinger = hardwareMap.servo.get("allClearFinger");
+        this.zipLineFlipper = hardwareMap.servo.get("zipLineFlipper");
 
         this.servoC1 = hardwareMap.servoController.get("servoC1");
         servoC1.pwmEnable();
 
-        //Set the AllClearFinger power
+        //Set the allClearFinger power
         fingerPosition = 0;
+        zipLineFlipperPosition = 0;
 
         // I essentially copied this from SynchTeleOp
         // Configure the knobs of the hardware according to how you've wired your
