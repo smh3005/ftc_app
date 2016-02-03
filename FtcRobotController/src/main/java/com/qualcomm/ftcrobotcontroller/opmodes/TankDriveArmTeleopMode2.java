@@ -91,10 +91,10 @@ public class TankDriveArmTeleopMode2 extends OpMode {
         }
 
         if (this.gamepad1.dpad_down) {
-            zipLineFlipperPosition = Range.clip(zipLineFlipperPosition - 0.01, 0, 1);
+            zipLineFlipperPosition = Range.clip(zipLineFlipperPosition + 0.01, 0, 1);
         }
         if (this.gamepad1.dpad_up) {
-            zipLineFlipperPosition = Range.clip(zipLineFlipperPosition + 0.01, 0, 1);
+            zipLineFlipperPosition = Range.clip(zipLineFlipperPosition - 0.01, 0, 1);
         }
 
         if (this.gamepad2.dpad_down) {
@@ -158,7 +158,7 @@ public class TankDriveArmTeleopMode2 extends OpMode {
 
         //Set the allClearFinger power
         fingerPosition = 0;
-        zipLineFlipperPosition = 0;
+        zipLineFlipperPosition = 1;
 
         // I essentially copied this from SynchTeleOp
         // Configure the knobs of the hardware according to how you've wired your
