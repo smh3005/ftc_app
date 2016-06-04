@@ -19,7 +19,8 @@ public class TankDriveArmTeleopMode2 extends OpMode {
     DcMotor shoulder;
     DcMotor elbow;
     Servo allClearFinger;
-    Servo zipLineFlipper;
+    Servo leftZipLineFlipper;
+    Servo rightZipLineFlipper;
 
     ServoController servoC1;
 
@@ -29,7 +30,8 @@ public class TankDriveArmTeleopMode2 extends OpMode {
     double shoulderPower = 1/4;
     double elbowPower = 1/2;
     double fingerPosition;
-    double zipLineFlipperPosition;
+    double leftZipLineFlipperPosition;
+    double rightZipLineFlipperPosition;
 
     Boolean lockedElbow = false;
     Boolean lockedShoulder = false;
@@ -48,7 +50,8 @@ public class TankDriveArmTeleopMode2 extends OpMode {
     @Override
     public void loop() {
 
-        //Pressing the A or B buttons lock the shoulder and the elbow respectfully. This is useful in the end game.
+        //Pressing the A or B buttons lock and unlock the shoulder and the elbow.
+        //This is useful in the end game.
         if (this.gamepad2.b) {
             lockedElbow = false;
             lockedShoulder = false;
@@ -59,14 +62,16 @@ public class TankDriveArmTeleopMode2 extends OpMode {
         }
 
         //Normal driving is the value of the gamepad's joystick's y-position divided by 3.
-        //Speedy driving is the 3 times the normal driving value
-        if (this.gamepad1.left_bumper) {
+        //Speedy driving is the 3 times the "normal" driving value
+        //Update 6/1/2016: Left bumper must be on and left stick y must not equal zero
+        //Hopefully this addresses our speedy driving lag bug.
+        if (this.gamepad1.left_bumper && this.gamepad1.left_stick_y != 0) {
             leftY = Range.clip(leftY * 3, -1, 1);
         } else {
             leftY = Range.clip(this.gamepad1.left_stick_y / 3, -1, 1);
         }
 
-        if (this.gamepad1.right_bumper) {
+        if (this.gamepad1.right_bumper && this.gamepad1.right_stick_y != 0) {
             rightY = Range.clip(rightY * 3, -1, 1);
         } else {
             rightY = Range.clip(this.gamepad1.right_stick_y / 3, -1, 1);
@@ -90,13 +95,23 @@ public class TankDriveArmTeleopMode2 extends OpMode {
             elbowPower = Range.clip(this.gamepad2.right_stick_y / 2, -1, 1);
         }
 
+        //Control the left zip line flipper
         if (this.gamepad1.dpad_down) {
-            zipLineFlipperPosition = Range.clip(zipLineFlipperPosition + 0.01, 0, 1);
+            leftZipLineFlipperPosition = Range.clip(leftZipLineFlipperPosition + 0.01, 0, 1);
         }
         if (this.gamepad1.dpad_up) {
-            zipLineFlipperPosition = Range.clip(zipLineFlipperPosition - 0.01, 0, 1);
+            leftZipLineFlipperPosition = Range.clip(leftZipLineFlipperPosition - 0.01, 0, 1);
         }
 
+        //Control the right zip line flipper
+        if (this.gamepad1.y) {
+            rightZipLineFlipperPosition = Range.clip(rightZipLineFlipperPosition + 0.01, 0, 1);
+        }
+        if (this.gamepad1.a) {
+            rightZipLineFlipperPosition = Range.clip(rightZipLineFlipperPosition - 0.01, 0, 1);
+        }
+
+        //Control the all clear signal finger
         if (this.gamepad2.dpad_down) {
             fingerPosition = Range.clip(fingerPosition + 0.01, 0, 1);
         }
@@ -121,7 +136,7 @@ public class TankDriveArmTeleopMode2 extends OpMode {
         telemetry.addData("shoulder: ", shoulderPower);
         telemetry.addData("elbow: ", elbowPower);
         telemetry.addData("allClearFinger", fingerPosition);
-        telemetry.addData("zipLineFlipper", zipLineFlipperPosition);
+        telemetry.addData("leftZipLineFlipper", leftZipLineFlipperPosition);
     }
 
 
@@ -131,7 +146,8 @@ public class TankDriveArmTeleopMode2 extends OpMode {
         this.shoulder.setPower(-shoulderPower);
         this.elbow.setPower(-elbowPower);
         this.allClearFinger.setPosition(fingerPosition);
-        this.zipLineFlipper.setPosition(zipLineFlipperPosition);
+        this.leftZipLineFlipper.setPosition(leftZipLineFlipperPosition);
+        this.rightZipLineFlipper.setPosition(rightZipLineFlipperPosition);
     }
 
     @Override
@@ -151,14 +167,16 @@ public class TankDriveArmTeleopMode2 extends OpMode {
         this.shoulder = hardwareMap.dcMotor.get("shoulder");
         this.elbow = hardwareMap.dcMotor.get("elbow");
         this.allClearFinger = hardwareMap.servo.get("allClearFinger");
-        this.zipLineFlipper = hardwareMap.servo.get("zipLineFlipper");
+        this.leftZipLineFlipper = hardwareMap.servo.get("leftZipLineFlipper");
+        this.rightZipLineFlipper = hardwareMap.servo.get("rightZipLineFlipper");
 
         this.servoC1 = hardwareMap.servoController.get("servoC1");
         servoC1.pwmEnable();
 
         //Set the allClearFinger power
         fingerPosition = 0;
-        zipLineFlipperPosition = 1;
+        leftZipLineFlipperPosition = 1;
+        rightZipLineFlipperPosition = 1;
 
         // I essentially copied this from SynchTeleOp
         // Configure the knobs of the hardware according to how you've wired your
