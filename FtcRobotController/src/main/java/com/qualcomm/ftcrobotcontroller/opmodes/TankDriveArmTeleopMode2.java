@@ -156,7 +156,6 @@ public class TankDriveArmTeleopMode2 extends OpMode {
         this.leftDrive.setPower(0);
         this.shoulder.setPower(0);
         this.elbow.setPower(0);
-
     }
 
     private void initializeTankDriveArmTeleopMode2() {
