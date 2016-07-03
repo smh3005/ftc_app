@@ -141,8 +141,8 @@ public class TankDriveArmTeleopMode2 extends OpMode {
 
 
     private void PowerSetter() throws Exception {
-        this.rightDrive.setPower(-rightY);
-        this.leftDrive.setPower(leftY);
+        this.rightDrive.setPower(rightY);
+        this.leftDrive.setPower(-leftY);
         this.shoulder.setPower(-shoulderPower);
         this.elbow.setPower(-elbowPower);
         this.allClearFinger.setPosition(fingerPosition);

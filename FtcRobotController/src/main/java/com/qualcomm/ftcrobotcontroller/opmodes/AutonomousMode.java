@@ -2,12 +2,8 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 
 import com.qualcomm.ftccommon.DbgLog;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.ServoController;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 /**
@@ -19,18 +15,18 @@ public class AutonomousMode extends OpMode {
     DcMotor rightDrive;
     DcMotor shoulder;
     DcMotor elbow;
-    Servo allClearFinger;
-    Servo leftZipLineFlipper;
-    Servo rightZipLineFlipper;
 
-    ServoController servoC1;
+    enum State {drivingFoward, turning, drivingToBox, settingUpShoulder, deployingMen, droppingShoulder};
+    State state;
 
-    enum State {drivingFoward, turingAround};
-    ElapsedTime time;
+    int leftTargetPosition = 6356-400;
+    int rightTargetPosition = -6356+400;
 
-    double drivingForwardTime = 2.0;
-    double turningAroundTime = 1.5;
-    int count = 0;
+    int shoulderTargetPosition;
+    int elbowTargetPosition;
+
+    double leftSpeed = 0.2;
+    double rightSpeed = -0.2;
 
     @Override
     public void init() {
@@ -43,7 +39,95 @@ public class AutonomousMode extends OpMode {
 
     @Override
     public void loop() {
+        switch (state) {
+            case drivingFoward:
+                leftDrive.setTargetPosition(leftTargetPosition);
+                rightDrive.setTargetPosition(rightTargetPosition);
+                //leftDrive.setPower(Range.clip
+                //(leftSpeed *(leftTargetPosition-this.leftDrive.getCurrentPosition())/leftTargetPosition, -1, 1));
+                //rightDrive.setPower(rightSpeed * (rightTargetPosition/this.rightDrive.getCurrentPosition()));
 
+                leftDrive.setPower(leftSpeed);
+                rightDrive.setPower(rightSpeed);
+
+                if (leftDrive.getCurrentPosition() >= leftTargetPosition) {
+                    leftDrive.setPower(0);
+                }
+
+                if (rightDrive.getCurrentPosition() <= rightTargetPosition) {
+                    rightDrive.setPower(0);
+                }
+
+                if (leftDrive.getCurrentPosition() >= leftTargetPosition
+                        && rightDrive.getCurrentPosition() <= rightTargetPosition) {
+                    state = state.turning;
+                }
+
+                break;
+            case turning:
+                leftTargetPosition = 8040-400;
+                rightTargetPosition = -5000+400;
+
+                leftDrive.setTargetPosition(leftTargetPosition);
+                rightDrive.setTargetPosition(rightTargetPosition);
+                leftDrive.setPower(0.4);
+                rightDrive.setPower(0.4);
+
+                if (leftDrive.getCurrentPosition() >= leftTargetPosition) {
+                    leftDrive.setPower(0);
+                }
+
+                if (rightDrive.getCurrentPosition() >= rightTargetPosition) {
+                    rightDrive.setPower(0);
+                }
+
+                if (leftDrive.getCurrentPosition() >= leftTargetPosition
+                        && rightDrive.getCurrentPosition() >= rightTargetPosition) {
+                    state = state.drivingToBox;
+                }
+                break;
+            case drivingToBox:
+                //leftTargetPosition = 11001;
+                //rightTargetPosition = -7735;
+                leftTargetPosition = 10738;
+                rightTargetPosition = -7505;
+                leftDrive.setTargetPosition(leftTargetPosition);
+                rightDrive.setTargetPosition(rightTargetPosition);
+                leftDrive.setPower(0.2);
+                rightDrive.setPower(-0.2);
+
+                if (leftDrive.getCurrentPosition() >= leftTargetPosition) {
+                    leftDrive.setPower(0);
+                }
+
+                if (rightDrive.getCurrentPosition() <= rightTargetPosition) {
+                    rightDrive.setPower(0);
+                }
+
+                if (leftDrive.getCurrentPosition() >= leftTargetPosition
+                        && rightDrive.getCurrentPosition() <= rightTargetPosition) {
+                    state = state.settingUpShoulder;
+                }
+                break;
+            case settingUpShoulder:
+                shoulderTargetPosition = -1168;
+                shoulder.setTargetPosition(shoulderTargetPosition);
+                shoulder.setPower(0.1);
+
+                if  (shoulder.getCurrentPosition() >= shoulderTargetPosition) {
+                    shoulder.setPower(0);
+                    state = state.deployingMen;
+                }
+                break;
+            case deployingMen:
+                elbowTargetPosition = 2000;
+                elbow.setPower(0.3);
+                elbow.setTargetPosition(elbowTargetPosition);
+
+                if  (elbow.getCurrentPosition() >= elbowTargetPosition) {
+                    elbow.setPower(0);
+                }
+        }
     }
 
     @Override
@@ -62,14 +146,12 @@ public class AutonomousMode extends OpMode {
         this.shoulder = hardwareMap.dcMotor.get("shoulder");
         this.elbow = hardwareMap.dcMotor.get("elbow");
 
-        this.servoC1 = hardwareMap.servoController.get("servoC1");
-        servoC1.pwmEnable();
+        this.leftDrive.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+        this.rightDrive.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+        this.shoulder.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+        this.elbow.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
 
-        this.leftDrive.setMode(DcMotorController.RunMode.RESET_ENCODERS);
-        this.rightDrive.setMode(DcMotorController.RunMode.RESET_ENCODERS);
-        this.shoulder.setMode(DcMotorController.RunMode.RESET_ENCODERS);
-        this.elbow.setMode(DcMotorController.RunMode.RESET_ENCODERS);
-
+        state = state.drivingFoward;
 
     }
 
