@@ -110,7 +110,7 @@ public class AutonomousMode extends OpMode {
                 }
                 break;
             case settingUpShoulder:
-                shoulderTargetPosition = -1168;
+                shoulderTargetPosition = -2168;
                 shoulder.setTargetPosition(shoulderTargetPosition);
                 shoulder.setPower(0.1);
 

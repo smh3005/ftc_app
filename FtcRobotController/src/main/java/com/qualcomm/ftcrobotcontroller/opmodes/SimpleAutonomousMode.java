@@ -16,11 +16,13 @@ public class SimpleAutonomousMode extends OpMode {
     DcMotor shoulder;
     DcMotor elbow;
 
-    enum State {drivingFoward}
+    enum State {liftArm, drivingFoward}
     State state;
 
-    int leftTargetPosition = 6356;
-    int rightTargetPosition = -6356;
+    int leftTargetPosition = 5356;
+    int rightTargetPosition = -5356;
+
+    int shoulderTargetPosition;
 
     double leftSpeed = 0.2;
     double rightSpeed = -0.2;
@@ -37,6 +39,14 @@ public class SimpleAutonomousMode extends OpMode {
     @Override
     public void loop() {
         switch (state) {
+            case liftArm:
+                this.shoulder.setTargetPosition(shoulderTargetPosition);
+                this.shoulder.setPower(0.25);
+
+                if (shoulder.getCurrentPosition() > shoulderTargetPosition) {
+                    state = state.drivingFoward;
+                    shoulder.setPower(0);
+                }
             case drivingFoward:
                 leftDrive.setTargetPosition(leftTargetPosition);
                 rightDrive.setTargetPosition(rightTargetPosition);
@@ -85,7 +95,9 @@ public class SimpleAutonomousMode extends OpMode {
         this.shoulder.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
         this.elbow.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
 
-        state = state.drivingFoward;
+        state = state.liftArm;
+
+        shoulderTargetPosition = 800;
 
     }
 
