@@ -77,47 +77,15 @@ public class TankDriveArmTeleopMode2 extends OpMode {
             rightY = Range.clip(this.gamepad1.right_stick_y / 3, -1, 1);
         }
 
-        //Shoulder and elbow power
-        //Same gearing strategy as the drive system
-        if (lockedShoulder) {
-            shoulderPower = 0.4;
-        } else if (this.gamepad2.left_bumper) {
-            shoulderPower = Range.clip(shoulderPower * 4, -1, 1);
-        } else {
-            shoulderPower = Range.clip(this.gamepad2.left_stick_y / 4, -1, 1);
-        }
+        lockShoulder();
+        lockElbow();
+        controlLeftZipLineFlipper();
+        controlRightZipLineFlipper();
+        controlAllClearSignalFinger();
 
-        if (lockedElbow) {
-            elbowPower = 0.1;
-        } else if (this.gamepad2.right_bumper) {
-            elbowPower = Range.clip(elbowPower * 2, -1, 1);
-        } else {
-            elbowPower = Range.clip(this.gamepad2.right_stick_y / 2, -1, 1);
-        }
+        setUpArm();
 
-        //Control the left zip line flipper
-        if (this.gamepad1.dpad_down) {
-            leftZipLineFlipperPosition = Range.clip(leftZipLineFlipperPosition + 0.01, 0, 1);
-        }
-        if (this.gamepad1.dpad_up) {
-            leftZipLineFlipperPosition = Range.clip(leftZipLineFlipperPosition - 0.01, 0, 1);
-        }
-
-        //Control the right zip line flipper
-        if (this.gamepad1.y) {
-            rightZipLineFlipperPosition = Range.clip(rightZipLineFlipperPosition + 0.01, 0, 1);
-        }
-        if (this.gamepad1.a) {
-            rightZipLineFlipperPosition = Range.clip(rightZipLineFlipperPosition - 0.01, 0, 1);
-        }
-
-        //Control the all clear signal finger
-        if (this.gamepad2.dpad_down) {
-            fingerPosition = Range.clip(fingerPosition + 0.01, 0, 1);
-        }
-        if (this.gamepad2.dpad_up) {
-            fingerPosition = Range.clip(fingerPosition - 0.01, 0, 1);
-        }
+        softwareArmStop();
 
         //set the power of the motors with the gamepad values
         try {
@@ -134,9 +102,83 @@ public class TankDriveArmTeleopMode2 extends OpMode {
         telemetry.addData("rightDrive: ", rightY);
         telemetry.addData("leftDrive: ", leftY);
         telemetry.addData("shoulder: ", shoulderPower);
+        telemetry.addData("shoulderPosition", shoulder.getCurrentPosition());
         telemetry.addData("elbow: ", elbowPower);
         telemetry.addData("allClearFinger", fingerPosition);
         telemetry.addData("leftZipLineFlipper", leftZipLineFlipperPosition);
+        telemetry.addData("rightZipLineFlipper", rightZipLineFlipperPosition);
+    }
+
+    private void softwareArmStop() {
+        if (this.gamepad2.left_stick_y > 0 && this.shoulder.getCurrentPosition() <= 0) {
+            shoulderPower = 0;
+        }
+    }
+
+    private void setUpArm() {
+        if (this.gamepad2.y) {
+            this.shoulder.setTargetPosition(1100);
+
+            if (this.shoulder.getCurrentPosition() <= this.shoulder.getTargetPosition()) {
+                shoulderPower = -0.3;
+            }
+            if (this.shoulder.getCurrentPosition() >= this.shoulder.getTargetPosition()) {
+                shoulderPower = 0;
+            }
+        }
+    }
+
+    private void lockElbow() {
+        if (lockedElbow) {
+            elbowPower = 0.1;
+        } else if (this.gamepad2.right_bumper) {
+            elbowPower = Range.clip(elbowPower * 2, -1, 1);
+        } else {
+            elbowPower = Range.clip(this.gamepad2.right_stick_y / 2, -1, 1);
+        }
+    }
+
+    private void lockShoulder() {
+        if (lockedShoulder) {
+            shoulderPower = 0.4;
+        } else if (this.gamepad2.left_bumper) {
+            shoulderPower = Range.clip(shoulderPower * 4, -1, 1);
+        } else if (this.gamepad2.left_stick_y > 0 ){
+            shoulderPower = Range.clip(this.gamepad2.left_stick_y / 6, -1, 1);
+        } else {
+            shoulderPower = Range.clip(this.gamepad2.left_stick_y / 4, -1, 1);
+        }
+    }
+
+    private void controlAllClearSignalFinger() {
+        //Control the all clear signal finger
+        if (this.gamepad2.dpad_down) {
+            fingerPosition = Range.clip(fingerPosition + 0.01, 0, 1);
+        }
+        if (this.gamepad2.dpad_up) {
+            fingerPosition = Range.clip(fingerPosition - 0.01, 0, 1);
+        }
+
+    }
+
+    private void controlRightZipLineFlipper() {
+        //Control the right zip line flipper
+        if (this.gamepad1.y) {
+            rightZipLineFlipperPosition = Range.clip(rightZipLineFlipperPosition + 0.01, 0, 1);
+        }
+        if (this.gamepad1.a) {
+            rightZipLineFlipperPosition = Range.clip(rightZipLineFlipperPosition - 0.01, 0, 1);
+        }
+    }
+
+    private void controlLeftZipLineFlipper() {
+        //Control the left zip line flipper
+        if (this.gamepad1.dpad_down) {
+            leftZipLineFlipperPosition = Range.clip(leftZipLineFlipperPosition + 0.01, 0, 1);
+        }
+        if (this.gamepad1.dpad_up) {
+            leftZipLineFlipperPosition = Range.clip(leftZipLineFlipperPosition - 0.01, 0, 1);
+        }
     }
 
 
@@ -181,10 +223,10 @@ public class TankDriveArmTeleopMode2 extends OpMode {
         // Configure the knobs of the hardware according to how you've wired your
         // robot. Here, we assume that there are no encoders connected to the motors,
         // so we inform the motor objects of that fact.
-        this.leftDrive.setMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
-        this.rightDrive.setMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
-        this.shoulder.setMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
-        this.elbow.setMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
+        this.leftDrive.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+        this.rightDrive.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+        this.shoulder.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+        this.elbow.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
     }
 
 }
