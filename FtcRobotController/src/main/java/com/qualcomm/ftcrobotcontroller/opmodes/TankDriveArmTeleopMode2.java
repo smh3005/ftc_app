@@ -117,10 +117,10 @@ public class TankDriveArmTeleopMode2 extends OpMode {
 
     private void setUpArm() {
         if (this.gamepad2.y) {
-            this.shoulder.setTargetPosition(1100);
+            this.shoulder.setTargetPosition(1050);
 
             if (this.shoulder.getCurrentPosition() <= this.shoulder.getTargetPosition()) {
-                shoulderPower = -0.3;
+                shoulderPower = -0.2;
             }
             if (this.shoulder.getCurrentPosition() >= this.shoulder.getTargetPosition()) {
                 shoulderPower = 0;
@@ -144,7 +144,7 @@ public class TankDriveArmTeleopMode2 extends OpMode {
         } else if (this.gamepad2.left_bumper) {
             shoulderPower = Range.clip(shoulderPower * 4, -1, 1);
         } else if (this.gamepad2.left_stick_y > 0 ){
-            shoulderPower = Range.clip(this.gamepad2.left_stick_y / 6, -1, 1);
+            shoulderPower = Range.clip(this.gamepad2.left_stick_y / 4, -1, 1);
         } else {
             shoulderPower = Range.clip(this.gamepad2.left_stick_y / 4, -1, 1);
         }
