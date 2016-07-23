@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoController;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 /**
@@ -32,6 +33,9 @@ public class TankDriveArmTeleopMode2 extends OpMode {
     double fingerPosition;
     double leftZipLineFlipperPosition;
     double rightZipLineFlipperPosition;
+
+    ElapsedTime time;
+    double count;
 
     Boolean lockedElbow = false;
     Boolean lockedShoulder = false;
@@ -85,7 +89,7 @@ public class TankDriveArmTeleopMode2 extends OpMode {
 
         setUpArm();
 
-        softwareArmStop();
+        //softwareArmStop();
 
         //set the power of the motors with the gamepad values
         try {
@@ -117,14 +121,23 @@ public class TankDriveArmTeleopMode2 extends OpMode {
 
     private void setUpArm() {
         if (this.gamepad2.y) {
+
+            if (count == 1) {
+                time = new ElapsedTime();
+            }
+
+            count = time.time();
             this.shoulder.setTargetPosition(1050);
 
+
             if (this.shoulder.getCurrentPosition() <= this.shoulder.getTargetPosition()) {
-                shoulderPower = -0.2;
+                shoulderPower = -0.2/Math.pow(1.1, count);
             }
             if (this.shoulder.getCurrentPosition() >= this.shoulder.getTargetPosition()) {
-                shoulderPower = 0;
+                shoulderPower = 0.2/Math.pow(1.1, count);
             }
+        } else {
+            count = 1;
         }
     }
 
@@ -142,11 +155,11 @@ public class TankDriveArmTeleopMode2 extends OpMode {
         if (lockedShoulder) {
             shoulderPower = 0.4;
         } else if (this.gamepad2.left_bumper) {
-            shoulderPower = Range.clip(shoulderPower * 4, -1, 1);
+            shoulderPower = Range.clip(shoulderPower * 5, -1, 1);
         } else if (this.gamepad2.left_stick_y > 0 ){
-            shoulderPower = Range.clip(this.gamepad2.left_stick_y / 4, -1, 1);
+            shoulderPower = Range.clip(this.gamepad2.left_stick_y / 5, -1, 1);
         } else {
-            shoulderPower = Range.clip(this.gamepad2.left_stick_y / 4, -1, 1);
+            shoulderPower = Range.clip(this.gamepad2.left_stick_y / 5, -1, 1);
         }
     }
 
@@ -218,6 +231,8 @@ public class TankDriveArmTeleopMode2 extends OpMode {
         fingerPosition = 0;
         leftZipLineFlipperPosition = 1;
         rightZipLineFlipperPosition = 1;
+
+        count = 1;
 
         // I essentially copied this from SynchTeleOp
         // Configure the knobs of the hardware according to how you've wired your
